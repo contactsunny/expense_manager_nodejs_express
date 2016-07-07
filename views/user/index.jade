@@ -1,0 +1,22 @@
+extends ../layout
+
+block content
+  h1= title
+
+  //  h2 Creating a new user
+      form(action="/users/create", method="post")
+        input(type="text", name="email", placeholder="Email")
+        br
+        input(type="password", name="password", placeholder="Password")
+        br
+        input(type="submit")
+
+
+  ul
+  each user in users
+    li
+      = user.email
+      |  
+      | (
+      a(href="/users/" + user.id + "/destroy") Destroy
+      | )

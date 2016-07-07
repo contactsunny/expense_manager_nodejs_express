@@ -1,0 +1,58 @@
+extends ../layout
+
+block content
+  h1= title
+
+  h2 Creating a new user
+    form(action="/categories/create", method="post" id="add_category_form")
+      input(type="text", id="category_name", name="category_name", placeholder="Category Name")
+      br
+
+      select(id="category_type", name="category_type")
+        each categoryType in categoryTypes
+          option(value="#{categoryType.id}") #{categoryType.category_type_name}
+      
+      br
+      input(type="submit")
+
+
+  <table id="category_table">
+  </table>
+
+  script(type="text/javascript").
+
+    $( document ).ready(function() {
+      
+      var categoryTable = $('#category_table').DataTable({
+        "ajax": "/categories/list",
+        "serverSide": false,
+        "columns": [
+          {
+            "data": "category_name",
+            "title": "Category Name"
+          },
+          {
+            "data": "category_type",
+            "title": "Category Type"
+          }
+        ]
+      });
+
+      $('#add_category_form').on('submit', function(e) {
+        e.preventDefault();
+
+        $.ajax({
+          type: 'POST',
+          url: '/categories/create',
+          data: {
+            category_name: $('#category_name').val(),
+            category_type: $("#category_type").val()
+          }
+        }).done(function(result) {
+          console.log(result);
+          categoryTable.ajax.reload();
+        });
+
+      });
+
+    });
