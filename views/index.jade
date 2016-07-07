@@ -2,4 +2,14 @@ extends layout
 
 block content
   h1= title
-  p Welcome to #{title}
+  
+  h2 Login
+  form(action="/users/login", method="post")
+    input(type="text", name="email", placeholder="Email")
+    br
+    input(type="password", name="password", placeholder="Password")
+    br
+    input(type="submit")
+
+    br
+    <a href="/register">Register</a>
