@@ -57,7 +57,7 @@ block content
             category_type: $("#category_type").val()
           }
         }).done(function(result) {
-          categoryTable.ajax.reload();
+          fillCategoryTable();
         });
 
       });
@@ -104,7 +104,7 @@ block content
       }
 
       function editCategory(categoryId) {
-        
+
       }
 
       function deleteCategory(categoryId) {
