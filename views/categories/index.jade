@@ -6,23 +6,30 @@ block content
   h2 Creating a new user
     form(action="/categories/create", method="post" id="add_category_form")
       input(type="text", id="category_name", name="category_name", placeholder="Category Name")
-      br
-
+      
+      &nbsp;
       select(id="category_type", name="category_type")
         each categoryType in categoryTypes
           option(value="#{categoryType.id}") #{categoryType.category_type_name}
       
-      br
+      &nbsp;
       input(type="submit")
 
 
-  <table id="category_table">
-  </table>
+  table(id="category_table")
+    thead
+      th Category
+      th Category Type
+      th Actions
+    tbody 
 
   script(type="text/javascript").
 
     $( document ).ready(function() {
+
+      fillCategoryTable();
       
+      /*
       var categoryTable = $('#category_table').DataTable({
         "ajax": "/categories/list",
         "serverSide": false,
@@ -32,11 +39,12 @@ block content
             "title": "Category Name"
           },
           {
-            "data": "category_type",
+            "data": "CategoryType.category_type_name",
             "title": "Category Type"
           }
         ]
       });
+      */
 
       $('#add_category_form').on('submit', function(e) {
         e.preventDefault();
@@ -49,10 +57,60 @@ block content
             category_type: $("#category_type").val()
           }
         }).done(function(result) {
-          console.log(result);
           categoryTable.ajax.reload();
         });
 
       });
 
     });
+
+    function fillCategoryTable() {
+
+        $.ajax({
+          url: '/categories/list',
+          type: 'GET',
+          success: function(result) {
+            console.log(result);
+            fillTableData(result);
+          }
+        });
+      }
+
+      function fillTableData(result) {
+
+        var data = result.data;
+        var tableData = [];
+
+        $.each(data, function(idx, value) {
+          var row = [];
+          row[0] = value.category_name;
+          row[1] = value.CategoryType.category_type_name;
+          
+          var editHtml = '<a href="#" onClick="editCategory(' + value.id +
+                            ');">Edit</a>';
+
+          var deleteHtml = '<a href="#" onClick="deleteCategory(' + value.id +
+                            ');">Delete</a>';
+
+          row[2] = editHtml + ' | ' + deleteHtml;
+
+          tableData.push(row);
+        });
+
+        var categoryTable = $('#category_table').DataTable();
+
+        categoryTable.clear().draw();
+        categoryTable.rows.add(tableData).draw();
+      }
+
+      function editCategory(categoryId) {
+        
+      }
+
+      function deleteCategory(categoryId) {
+        if(!confirm('Delete category?')) {
+          return;
+        }
+
+        alert('Deleting category');
+      }

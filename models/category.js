@@ -7,7 +7,12 @@ module.exports = function(sequelize, DataTypes) {
     category_type: DataTypes.INTEGER
   },
   {
-  	tableName: 'categories'
+  	tableName: 'categories',
+    classMethods:{
+      associate:function(models){
+        Category.belongsTo(models.CategoryType, { foreignKey:'category_type', foreignKeyConstraint:true} );
+      }
+    }
   });
 
   return Category;

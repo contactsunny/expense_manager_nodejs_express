@@ -21,7 +21,7 @@ router.get('/', function(req, res) {
 
 router.get('/list', function(req, res) {
 
-	models.Category.findAll().then(function(categories) {
+	models.Category.findAll({include: [models.CategoryType]}).then(function(categories) {
 		res.contentType('json');
 		res.send(JSON.stringify({"data": categories}));
 	});

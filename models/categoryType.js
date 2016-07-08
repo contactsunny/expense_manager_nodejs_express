@@ -6,7 +6,12 @@ module.exports = function(sequelize, DataTypes) {
     category_type_name: DataTypes.STRING
   },
   {
-  	tableName: 'category_types'
+  	tableName: 'category_types',
+    classMethods:{
+      associate:function(models){
+        CategoryType.hasMany(models.Category, { foreignKey:'id', foreignKeyConstraint:true} );
+      }
+    }
   });
 
   return CategoryType;
