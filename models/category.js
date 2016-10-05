@@ -11,6 +11,7 @@ module.exports = function(sequelize, DataTypes) {
     classMethods:{
       associate:function(models){
         Category.belongsTo(models.CategoryType, { foreignKey:'category_type', foreignKeyConstraint:true} );
+        Category.hasMany(models.Expense, { foreignKey:'id', foreignKeyConstraint:true} );
       }
     }
   });

@@ -3,18 +3,23 @@ extends ../layout
 block content
   h1= title
 
-  h2 Creating a new user
-    form(action="/categories/create", method="post" id="add_category_form")
-      input(type="text", id="category_name", name="category_name", placeholder="Category Name")
-      
-      &nbsp;
-      select(id="category_type", name="category_type")
-        each categoryType in categoryTypes
-          option(value="#{categoryType.id}") #{categoryType.category_type_name}
-      
-      &nbsp;
-      input(type="submit")
+  h2(id="form_header") Create Category
+  form(action="/categories/create", method="post" id="add_category_form")
+    input(type="text", id="category_name", name="category_name", placeholder="Category Name", 
+      required="required")
 
+    input(type="hidden", id="category_id")
+    
+    &nbsp;
+    select(id="category_type", name="category_type")
+      each categoryType in categoryTypes
+        option(value="#{categoryType.id}") #{categoryType.category_type_name}
+    
+    &nbsp;
+    input(type="submit", id="submit_button" value="Create")
+
+    br
+    br
 
   table(id="category_table")
     thead
@@ -25,44 +30,38 @@ block content
 
   script(type="text/javascript").
 
-    $( document ).ready(function() {
+    var categoriesList = [];
+    var editingCategory = 0;
+
+    $(document).ready(function() {
 
       fillCategoryTable();
-      
-      /*
-      var categoryTable = $('#category_table').DataTable({
-        "ajax": "/categories/list",
-        "serverSide": false,
-        "columns": [
-          {
-            "data": "category_name",
-            "title": "Category Name"
-          },
-          {
-            "data": "CategoryType.category_type_name",
-            "title": "Category Type"
-          }
-        ]
-      });
-      */
 
       $('#add_category_form').on('submit', function(e) {
         e.preventDefault();
 
-        $.ajax({
-          type: 'POST',
-          url: '/categories/create',
-          data: {
-            category_name: $('#category_name').val(),
-            category_type: $("#category_type").val()
-          }
-        }).done(function(result) {
-          fillCategoryTable();
-        });
-
+        if(editingCategory == 1) {
+          saveCategory();
+          //- return;
+        } else {
+          createCategory();
+        }
       });
 
     });
+
+    function createCategory() {
+      $.ajax({
+        type: 'POST',
+        url: '/categories/create',
+        data: {
+          category_name: $('#category_name').val(),
+          category_type: $("#category_type").val()
+        }
+      }).done(function(result) {
+        fillCategoryTable();
+      });
+    }
 
     function fillCategoryTable() {
 
@@ -71,6 +70,7 @@ block content
           type: 'GET',
           success: function(result) {
             console.log(result);
+            categoriesList = result.data;
             fillTableData(result);
           }
         });
@@ -79,8 +79,8 @@ block content
       function fillTableData(result) {
 
         var data = result.data;
-        var tableData = [];
 
+        var tableData = [];
         $.each(data, function(idx, value) {
           var row = [];
           row[0] = value.category_name;
@@ -104,7 +104,27 @@ block content
       }
 
       function editCategory(categoryId) {
+        $('#form_header').text('Edit Category');
+        var category = findCategory(categoryId);
+        
+        $('#category_id').val(category.id);
+        $('#category_name').val(category.category_name);
+        $('#category_type').val(category.category_type);
+        $('#submit_button').val('Save');
 
+        editingCategory = 1;
+      }
+
+      function findCategory(categoryId) {
+        var category = null;
+
+        $.each(categoriesList, function(idx, value) {
+          if(value.id == categoryId) {
+            category = value;
+          }
+        });
+
+        return category;
       }
 
       function deleteCategory(categoryId) {
@@ -112,5 +132,43 @@ block content
           return;
         }
 
-        alert('Deleting category');
+        $.ajax({
+          type: 'DELETE',
+          url: '/categories/' + categoryId + '/destroy'
+        }).done(function(result) {
+          editingCategory = 0;
+          console.log(result);
+          fillCategoryTable();
+        });
+      }
+
+      function saveCategory() {
+        $.ajax({
+          type: 'POST',
+          url: '/categories/update',
+          data: {
+            category_id: $('#category_id').val(),
+            category_name: $('#category_name').val(),
+            category_type: $("#category_type").val()
+          },
+          success: function(result) {
+            resetCategoryForm();
+          },
+          fail: function(result) {
+            resetCategoryForm();
+          }
+        });
+      }
+
+      function resetCategoryForm() {
+
+        $('#form_header').text('Create Category');
+        
+        $('#category_id').val(0);
+        $('#category_name').val('');
+        $('#category_type').val(1);
+        $('#submit_button').val('Create');
+
+        editingCategory = 0;
+        fillCategoryTable();
       }
